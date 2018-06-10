@@ -311,7 +311,7 @@ class TestServiceResponses(StartApiIntegBaseClass):
         response = requests.get(self.url + "/onlysetstatuscode")
 
         self.assertEquals(response.status_code, 200)
-        self.assertEquals(response.content, "no data")
+        self.assertEquals(response.content.decode('utf-8'), "no data")
         self.assertEquals(response.headers.get("Content-Type"), "application/json")
 
     def test_default_status_code(self):
@@ -331,7 +331,7 @@ class TestServiceResponses(StartApiIntegBaseClass):
         response = requests.get(self.url + "/onlysetstatuscode")
 
         self.assertEquals(response.status_code, 200)
-        self.assertEquals(response.content, "no data")
+        self.assertEquals(response.content.decode('utf-8'), "no data")
 
     def test_function_writing_to_stdout(self):
         response = requests.get(self.url + "/writetostdout")
@@ -380,7 +380,20 @@ class TestServiceRequests(StartApiIntegBaseClass):
 
         response_data = response.json()
 
-        self.assertEquals(response_data.get("queryStringParameters"), {"key": ["value"]})
+        self.assertEquals(response_data.get("queryStringParameters"), {"key": "value"})
+
+    def test_request_with_list_of_query_params(self):
+        """
+        Query params given should be put into the Event to Lambda
+        """
+        response = requests.get(self.url + "/id/4",
+                                params={"key": ["value", "value2"]})
+
+        self.assertEquals(response.status_code, 200)
+
+        response_data = response.json()
+
+        self.assertEquals(response_data.get("queryStringParameters"), {"key": "value2"})
 
     def test_request_with_path_params(self):
         """

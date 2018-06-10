@@ -1,6 +1,7 @@
 """
 Library for Validating Sam Templates
 """
+import functools
 from samtranslator.public.exceptions import InvalidDocumentException
 from samtranslator.parser.parser import Parser
 from samtranslator.translator.translator import Translator
@@ -60,7 +61,7 @@ class SamTemplateValidator(object):
                                      parameter_values={})
         except InvalidDocumentException as e:
             raise InvalidSamDocumentException(
-                reduce(lambda message, error: message + ' ' + error.message, e.causes, e.message))
+                functools.reduce(lambda message, error: message + ' ' + str(error), e.causes, str(e)))
 
     def _replace_local_codeuri(self):
         """
@@ -81,8 +82,8 @@ class SamTemplateValidator(object):
                 SamTemplateValidator._update_to_s3_uri("CodeUri", resource_dict)
 
             if resource_type == "AWS::Serverless::Api":
-
-                SamTemplateValidator._update_to_s3_uri("DefinitionUri", resource_dict)
+                if "DefinitionBody" not in resource_dict:
+                    SamTemplateValidator._update_to_s3_uri("DefinitionUri", resource_dict)
 
     @staticmethod
     def is_s3_uri(uri):
